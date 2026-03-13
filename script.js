@@ -227,7 +227,7 @@ let hintUsage = new Set();
 const HISTORY_KEY = "algebraExamHistory";
 const USER_ID_KEY = "algebraUserId";
 // Update this to your deployed backend URL when you go live.
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "https://algebra-test.onrender.com";
 
 function getOrCreateUserId() {
   const existing = localStorage.getItem(USER_ID_KEY);
