@@ -1,0 +1,267 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap');
+
+:root {
+  --bg-1: #f7f2e9;
+  --bg-2: #e9f1ff;
+  --accent: #0f4c81;
+  --accent-2: #e07a5f;
+  --ink: #1b1b1b;
+  --muted: #52616b;
+  --card: #ffffff;
+  --shadow: 0 30px 60px rgba(15, 76, 129, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  min-height: 100vh;
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(224, 122, 95, 0.15), transparent 45%),
+    radial-gradient(circle at 80% 30%, rgba(15, 76, 129, 0.18), transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(84, 136, 199, 0.15), transparent 45%);
+  z-index: -1;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+  display: grid;
+  gap: 24px;
+}
+
+.hero {
+  text-align: left;
+  display: grid;
+  gap: 12px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 76, 129, 0.1);
+  color: var(--accent);
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.hero h1 {
+  font-family: "Fraunces", serif;
+  font-size: clamp(2.6rem, 4vw, 3.6rem);
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 20px;
+  animation: rise 500ms ease;
+}
+
+.hidden {
+  display: none;
+}
+
+.options {
+  display: grid;
+  gap: 16px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 76, 129, 0.15);
+  cursor: pointer;
+  transition: transform 200ms ease, border-color 200ms ease;
+}
+
+.option input {
+  accent-color: var(--accent);
+  transform: scale(1.2);
+}
+
+.option:hover {
+  transform: translateY(-2px);
+  border-color: rgba(15, 76, 129, 0.4);
+}
+
+.option strong {
+  display: block;
+  font-size: 1.05rem;
+}
+
+.option small {
+  color: var(--muted);
+}
+
+.primary,
+.ghost {
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--accent);
+  color: white;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(15, 76, 129, 0.2);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(15, 76, 129, 0.25);
+}
+
+.exam-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.exam-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.timer {
+  background: rgba(224, 122, 95, 0.12);
+  color: #a14f3a;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.progress {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.question-list {
+  display: grid;
+  gap: 18px;
+}
+
+.question {
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(15, 76, 129, 0.04);
+}
+
+.question h3 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+}
+
+.choices {
+  display: grid;
+  gap: 10px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: white;
+  cursor: pointer;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.choice input {
+  accent-color: var(--accent-2);
+}
+
+.choice:hover {
+  border-color: rgba(224, 122, 95, 0.5);
+  background: rgba(224, 122, 95, 0.06);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.score {
+  font-family: "Fraunces", serif;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  color: var(--accent);
+}
+
+.breakdown {
+  display: grid;
+  gap: 12px;
+}
+
+.breakdown-item {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(224, 122, 95, 0.08);
+}
+
+.breakdown-item strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 32px 16px 60px;
+  }
+
+  .card {
+    padding: 22px;
+  }
+}

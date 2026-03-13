@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algebra 1 Exam Lab</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+  <main class="page">
+    <header class="hero">
+      <div class="hero-badge">Grade 9 Algebra 1</div>
+      <h1>Algebra 1 Exam Lab</h1>
+      <p class="subtitle">Pick a unit or take the full exam. You will get 10 multiple-choice questions.</p>
+    </header>
+
+    <section class="card" id="setup">
+      <h2>Choose Your Exam</h2>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="exam" value="unit1" checked />
+          <span>
+            <strong>Unit 1</strong>
+            <small>Foundations, expressions, equations</small>
+          </span>
+        </label>
+        <label class="option">
+          <input type="radio" name="exam" value="unit2" />
+          <span>
+            <strong>Unit 2</strong>
+            <small>Functions, graphs, inequalities</small>
+          </span>
+        </label>
+        <label class="option">
+          <input type="radio" name="exam" value="overall" />
+          <span>
+            <strong>Overall Exam</strong>
+            <small>Mix of Unit 1 and Unit 2</small>
+          </span>
+        </label>
+      </div>
+      <button id="startBtn" class="primary">Start Exam</button>
+    </section>
+
+    <section class="card hidden" id="exam">
+      <div class="exam-header">
+        <h2 id="examTitle">Exam</h2>
+        <div class="exam-meta">
+          <div class="timer" id="timer">Time left: 15:00</div>
+          <div class="progress" id="progress">Question 1 of 10</div>
+        </div>
+      </div>
+      <div id="questionList" class="question-list"></div>
+      <div class="actions">
+        <button id="submitBtn" class="primary">Submit Answers</button>
+        <button id="restartBtn" class="ghost">Start Over</button>
+      </div>
+    </section>
+
+    <section class="card hidden" id="results">
+      <h2>Results</h2>
+      <div class="score" id="score"></div>
+      <div id="breakdown" class="breakdown"></div>
+      <button id="retakeBtn" class="primary">Take Another Exam</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
