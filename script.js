@@ -210,12 +210,36 @@ const hintBody = document.getElementById("hintBody");
 const closeHintBtn = document.getElementById("closeHintBtn");
 const hintModalHeader = document.getElementById("hintModalHeader");
 const hintModalCard = hintModal.querySelector(".modal-card");
+const historyList = document.getElementById("historyList");
+const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+const detailsModal = document.getElementById("detailsModal");
+const detailsBody = document.getElementById("detailsBody");
+const closeDetailsBtn = document.getElementById("closeDetailsBtn");
+const detailsModalHeader = document.getElementById("detailsModalHeader");
+const detailsModalCard = detailsModal.querySelector(".modal-card");
 
 let currentExam = [];
 let timerId = null;
 let remainingSeconds = 0;
 const EXAM_DURATION_MINUTES = 15;
 let showHints = false;
+let hintUsage = new Set();
+const HISTORY_KEY = "algebraExamHistory";
+const USER_ID_KEY = "algebraUserId";
+// Update this to your deployed backend URL when you go live.
+const API_BASE_URL = "http://localhost:3000";
+
+function getOrCreateUserId() {
+  const existing = localStorage.getItem(USER_ID_KEY);
+  if (existing) {
+    return existing;
+  }
+  const generated = `user_${crypto.randomUUID()}`;
+  localStorage.setItem(USER_ID_KEY, generated);
+  return generated;
+}
+
+const USER_ID = getOrCreateUserId();
 
 function shuffle(array) {
   return array
@@ -248,6 +272,7 @@ function buildExam() {
   const exam = getSelectedExam();
   examTitle.textContent = exam.title;
   showHints = hintToggle.checked;
+  hintUsage = new Set();
   currentExam = shuffle(exam.questions).slice(0, 10);
   questionList.innerHTML = "";
 
@@ -265,6 +290,7 @@ function buildExam() {
       hintBtn.className = "hint-link";
       hintBtn.textContent = "Show hint";
       hintBtn.addEventListener("click", () => {
+        hintUsage.add(index);
         hintQuestion.textContent = question.text;
         hintBody.textContent = question.hint || "Try breaking the problem into smaller steps.";
         hintModal.classList.remove("hidden");
@@ -329,9 +355,10 @@ function startTimer() {
   }, 1000);
 }
 
-function gradeExam(isAutoSubmit = false) {
+async function gradeExam(isAutoSubmit = false) {
   let correct = 0;
   const missed = [];
+  const answers = [];
   const existingNotice = resultsSection.querySelector(".auto-submit");
   if (existingNotice) {
     existingNotice.remove();
@@ -345,7 +372,8 @@ function gradeExam(isAutoSubmit = false) {
     const selected = document.querySelector(`input[name='q${index}']:checked`);
     const userAnswer = selected ? Number(selected.value) : null;
 
-    if (userAnswer === question.answer) {
+    const isCorrect = userAnswer === question.answer;
+    if (isCorrect) {
       correct += 1;
     } else {
       missed.push({
@@ -356,10 +384,29 @@ function gradeExam(isAutoSubmit = false) {
         explanation: question.explanation
       });
     }
+
+    answers.push({
+      index: index + 1,
+      question: question.text,
+      userAnswer: userAnswer === null ? null : question.choices[userAnswer],
+      correctAnswer: question.choices[question.answer],
+      isCorrect,
+      hintUsed: hintUsage.has(index)
+    });
   });
 
   const scorePercent = Math.round((correct / 10) * 100);
   scoreEl.textContent = `${correct} / 10 correct (${scorePercent}%)`;
+
+  await saveExamHistory({
+    title: examTitle.textContent,
+    score: `${correct}/10`,
+    percent: scorePercent,
+    date: new Date().toLocaleString(),
+    answers
+  });
+
+  await renderHistory();
 
   breakdown.innerHTML = "";
   if (missed.length === 0) {
@@ -428,10 +475,166 @@ function resetToSetup() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+async function saveExamHistory(entry) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/exams`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...entry, userId: USER_ID })
+    });
+    if (response.ok) {
+      return;
+    }
+  } catch {
+    // Fall back to local storage if API is unavailable.
+  }
+  const localEntry = { ...entry, id: `local_${Date.now()}` };
+  const history = getExamHistory();
+  history.unshift(localEntry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 20)));
+}
+
+function getExamHistory() {
+  const raw = localStorage.getItem(HISTORY_KEY);
+  if (!raw) {
+    return [];
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+async function loadExamHistory() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/exams?userId=${encodeURIComponent(USER_ID)}`);
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch {
+    // Ignore network errors and use local history.
+  }
+  return getExamHistory();
+}
+
+async function renderHistory() {
+  const history = await loadExamHistory();
+  historyList.innerHTML = "";
+  if (history.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "history-item";
+    empty.textContent = "No exams taken yet.";
+    historyList.appendChild(empty);
+    return;
+  }
+  history.forEach((entry) => {
+    const row = document.createElement("div");
+    row.className = "history-item";
+
+    const title = document.createElement("strong");
+    title.textContent = `${entry.title} - ${entry.score} (${entry.percent}%)`;
+
+    const date = document.createElement("span");
+    date.textContent = entry.date;
+
+    const actions = document.createElement("div");
+    actions.className = "history-actions";
+
+    const detailsBtn = document.createElement("button");
+    detailsBtn.type = "button";
+    detailsBtn.className = "details-btn";
+    detailsBtn.textContent = "View details";
+    detailsBtn.addEventListener("click", async () => {
+      const details = entry.answers || await loadExamDetails(entry.id);
+      renderDetails(details);
+      detailsModal.classList.remove("hidden");
+    });
+
+    actions.appendChild(detailsBtn);
+    row.appendChild(title);
+    row.appendChild(date);
+    row.appendChild(actions);
+    historyList.appendChild(row);
+  });
+}
+
+async function loadExamDetails(examId) {
+  if (!examId) {
+    return [];
+  }
+  if (String(examId).startsWith("local_")) {
+    const history = getExamHistory();
+    const match = history.find((entry) => entry.id === examId);
+    return match?.answers || [];
+  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/exams/${encodeURIComponent(examId)}/answers?userId=${encodeURIComponent(USER_ID)}`);
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch {
+    // Ignore and fall back to empty list.
+  }
+  return [];
+}
+
+function renderDetails(details) {
+  detailsBody.innerHTML = "";
+  if (!details || details.length === 0) {
+    detailsBody.textContent = "No detailed answers were saved for this exam.";
+    return;
+  }
+  const list = document.createElement("div");
+  list.className = "details-list";
+  details.forEach((item) => {
+    const block = document.createElement("div");
+    block.className = "details-item";
+
+    const title = document.createElement("strong");
+    title.textContent = `Q${item.question_index || item.index}: ${item.question_text || item.question}`;
+
+    const userAnswer = document.createElement("div");
+    userAnswer.textContent = `Your answer: ${item.user_answer ?? item.userAnswer ?? "No answer"}`;
+
+    const correctAnswer = document.createElement("div");
+    correctAnswer.textContent = `Correct answer: ${item.correct_answer || item.correctAnswer}`;
+
+    const hintUsed = document.createElement("div");
+    const used = item.hint_used ?? item.hintUsed;
+    hintUsed.textContent = `Hint used: ${used ? "Yes" : "No"}`;
+
+    block.appendChild(title);
+    block.appendChild(userAnswer);
+    block.appendChild(correctAnswer);
+    block.appendChild(hintUsed);
+    list.appendChild(block);
+  });
+  detailsBody.appendChild(list);
+}
+
 startBtn.addEventListener("click", buildExam);
 submitBtn.addEventListener("click", gradeExam);
 restartBtn.addEventListener("click", resetToSetup);
 retakeBtn.addEventListener("click", resetToSetup);
+clearHistoryBtn.addEventListener("click", () => {
+  fetch(`${API_BASE_URL}/api/exams?userId=${encodeURIComponent(USER_ID)}`, {
+    method: "DELETE"
+  }).catch(() => {
+    localStorage.removeItem(HISTORY_KEY);
+  }).finally(() => {
+    renderHistory();
+  });
+});
+
+closeDetailsBtn.addEventListener("click", () => {
+  detailsModal.classList.add("hidden");
+});
+detailsModal.addEventListener("click", (event) => {
+  if (event.target === detailsModal) {
+    detailsModal.classList.add("hidden");
+  }
+});
 closeModalBtn.addEventListener("click", () => {
   explainModal.classList.add("hidden");
 });
@@ -456,6 +659,9 @@ let explainOffsetY = 0;
 let isDraggingHint = false;
 let hintOffsetX = 0;
 let hintOffsetY = 0;
+let isDraggingDetails = false;
+let detailsOffsetX = 0;
+let detailsOffsetY = 0;
 
 function startDrag(event) {
   if (event.target === closeModalBtn) {
@@ -528,6 +734,44 @@ function endHintDrag() {
 hintModalHeader.addEventListener("mousedown", startHintDrag);
 window.addEventListener("mousemove", dragHint);
 window.addEventListener("mouseup", endHintDrag);
+
+function startDetailsDrag(event) {
+  if (event.target === closeDetailsBtn) {
+    return;
+  }
+  isDraggingDetails = true;
+  const rect = detailsModalCard.getBoundingClientRect();
+  detailsOffsetX = event.clientX - rect.left;
+  detailsOffsetY = event.clientY - rect.top;
+  detailsModalCard.style.position = "fixed";
+  detailsModalCard.style.left = `${rect.left}px`;
+  detailsModalCard.style.top = `${rect.top}px`;
+  detailsModalCard.style.margin = "0";
+}
+
+function dragDetails(event) {
+  if (!isDraggingDetails) {
+    return;
+  }
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const cardWidth = detailsModalCard.offsetWidth;
+  const cardHeight = detailsModalCard.offsetHeight;
+  const nextLeft = Math.min(Math.max(event.clientX - detailsOffsetX, 12), viewportWidth - cardWidth - 12);
+  const nextTop = Math.min(Math.max(event.clientY - detailsOffsetY, 12), viewportHeight - cardHeight - 12);
+  detailsModalCard.style.left = `${nextLeft}px`;
+  detailsModalCard.style.top = `${nextTop}px`;
+}
+
+function endDetailsDrag() {
+  isDraggingDetails = false;
+}
+
+detailsModalHeader.addEventListener("mousedown", startDetailsDrag);
+window.addEventListener("mousemove", dragDetails);
+window.addEventListener("mouseup", endDetailsDrag);
+
+renderHistory();
 
 questionList.addEventListener("change", () => {
   const answered = Array.from(new Set(

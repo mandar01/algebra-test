@@ -74,6 +74,14 @@
       <div id="breakdown" class="breakdown"></div>
       <button id="retakeBtn" class="primary">Take Another Exam</button>
     </section>
+
+    <section class="card" id="history">
+      <div class="history-header">
+        <h2>Exam History</h2>
+        <button id="clearHistoryBtn" class="ghost">Clear History</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </section>
   </main>
 
   <div class="modal hidden" id="explainModal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">
@@ -95,6 +103,16 @@
       </div>
       <div class="modal-question" id="hintQuestion"></div>
       <div class="modal-body" id="hintBody"></div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="detailsModal" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
+    <div class="modal-card">
+      <div class="modal-header" id="detailsModalHeader">
+        <h3 id="detailsTitle">Exam Details</h3>
+        <button class="modal-close" id="closeDetailsBtn" type="button">Close</button>
+      </div>
+      <div class="modal-body" id="detailsBody"></div>
     </div>
   </div>
 
