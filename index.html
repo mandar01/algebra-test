@@ -21,67 +21,84 @@
       </div>
     </header>
 
-    <section class="card" id="setup">
-      <h2>Choose Your Exam</h2>
-      <div class="options">
-        <label class="option">
-          <input type="radio" name="exam" value="unit1" checked />
-          <span>
-            <strong>Unit 1</strong>
-            <small>Foundations, expressions, equations</small>
-          </span>
-        </label>
-        <label class="option">
-          <input type="radio" name="exam" value="unit2" />
-          <span>
-            <strong>Unit 2</strong>
-            <small>Functions, graphs, inequalities</small>
-          </span>
-        </label>
-        <label class="option">
-          <input type="radio" name="exam" value="overall" />
-          <span>
-            <strong>Overall Exam</strong>
-            <small>Mix of Unit 1 and Unit 2</small>
-          </span>
-        </label>
-      </div>
-      <label class="hint-toggle">
-        <input type="checkbox" id="hintToggle" />
-        <span>Show hints during the exam</span>
-      </label>
-      <button id="startBtn" class="primary">Start Exam</button>
-    </section>
+    <nav class="tabs" aria-label="Main tabs">
+      <button class="tab active" id="tabExam" type="button">Exam</button>
+      <button class="tab" id="tabHistory" type="button">History</button>
+    </nav>
 
-    <section class="card hidden" id="exam">
-      <div class="exam-header">
-        <h2 id="examTitle">Exam</h2>
-        <div class="exam-meta">
-          <div class="timer" id="timer">Time left: 15:00</div>
-          <div class="progress" id="progress">Question 1 of 10</div>
+    <div id="examTab">
+      <section class="card" id="setup">
+        <h2>Choose Your Exam</h2>
+        <div class="options">
+          <label class="option">
+            <input type="radio" name="exam" value="unit1" checked />
+            <span>
+              <strong>Unit 1</strong>
+              <small>Foundations, expressions, equations</small>
+            </span>
+          </label>
+          <label class="option">
+            <input type="radio" name="exam" value="unit2" />
+            <span>
+              <strong>Unit 2</strong>
+              <small>Functions, graphs, inequalities</small>
+            </span>
+          </label>
+          <label class="option">
+            <input type="radio" name="exam" value="overall" />
+            <span>
+              <strong>Overall Exam</strong>
+              <small>Mix of Unit 1 and Unit 2</small>
+            </span>
+          </label>
         </div>
-      </div>
-      <div id="questionList" class="question-list"></div>
-      <div class="actions">
-        <button id="submitBtn" class="primary">Submit Answers</button>
-        <button id="restartBtn" class="ghost">Start Over</button>
-      </div>
-    </section>
+        <label class="hint-toggle">
+          <input type="checkbox" id="hintToggle" />
+          <span>Show hints during the exam</span>
+        </label>
+        <button id="startBtn" class="primary">Start Exam</button>
+      </section>
 
-    <section class="card hidden" id="results">
-      <h2>Results</h2>
-      <div class="score" id="score"></div>
-      <div id="breakdown" class="breakdown"></div>
-      <button id="retakeBtn" class="primary">Take Another Exam</button>
-    </section>
+      <section class="card hidden" id="exam">
+        <div class="exam-header">
+          <h2 id="examTitle">Exam</h2>
+          <div class="exam-meta">
+            <div class="timer" id="timer">Time left: 15:00</div>
+            <div class="progress" id="progress">Question 1 of 10</div>
+          </div>
+        </div>
+        <div id="questionList" class="question-list"></div>
+        <div class="actions">
+          <button id="submitBtn" class="primary">Submit Answers</button>
+          <button id="restartBtn" class="ghost">Start Over</button>
+        </div>
+      </section>
 
-    <section class="card" id="history">
-      <div class="history-header">
-        <h2>Exam History</h2>
-        <button id="clearHistoryBtn" class="ghost">Clear History</button>
-      </div>
-      <div id="historyList" class="history-list"></div>
-    </section>
+      <section class="card hidden" id="results">
+        <h2>Results</h2>
+        <div class="score" id="score"></div>
+        <div id="breakdown" class="breakdown"></div>
+        <button id="retakeBtn" class="primary">Take Another Exam</button>
+      </section>
+    </div>
+
+    <div id="historyTab" class="hidden">
+      <section class="card" id="history">
+        <div class="history-header">
+          <h2>Exam History</h2>
+          <button id="clearHistoryBtn" class="ghost">Clear History</button>
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </section>
+
+      <section class="card" id="insights">
+        <h2>Score Insights</h2>
+        <div class="chart-wrap">
+          <canvas id="scoreChart" width="800" height="260"></canvas>
+        </div>
+        <div class="chart-note">Latest 20 exams shown. Scores are out of 100.</div>
+      </section>
+    </div>
   </main>
 
   <div class="modal hidden" id="explainModal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">

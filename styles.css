@@ -172,6 +172,31 @@ body {
   animation: rise 500ms ease;
 }
 
+.tabs {
+  display: inline-flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 6px;
+  border-radius: 16px;
+  box-shadow: 0 12px 22px rgba(11, 114, 133, 0.12);
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
 .hidden {
   display: none;
 }
@@ -397,6 +422,18 @@ body {
 }
 
 .history-item span {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.chart-wrap {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px dashed rgba(11, 114, 133, 0.25);
+}
+
+.chart-note {
   color: var(--muted);
   font-size: 0.95rem;
 }

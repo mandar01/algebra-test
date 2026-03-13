@@ -212,6 +212,12 @@ const hintModalHeader = document.getElementById("hintModalHeader");
 const hintModalCard = hintModal.querySelector(".modal-card");
 const historyList = document.getElementById("historyList");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+const tabExam = document.getElementById("tabExam");
+const tabHistory = document.getElementById("tabHistory");
+const examTab = document.getElementById("examTab");
+const historyTab = document.getElementById("historyTab");
+const scoreChart = document.getElementById("scoreChart");
+const scoreChartCtx = scoreChart?.getContext("2d");
 const detailsModal = document.getElementById("detailsModal");
 const detailsBody = document.getElementById("detailsBody");
 const closeDetailsBtn = document.getElementById("closeDetailsBtn");
@@ -228,6 +234,7 @@ const HISTORY_KEY = "algebraExamHistory";
 const USER_ID_KEY = "algebraUserId";
 // Update this to your deployed backend URL when you go live.
 const API_BASE_URL = "https://algebra-test.onrender.com";
+let lastHistory = [];
 
 function getOrCreateUserId() {
   const existing = localStorage.getItem(USER_ID_KEY);
@@ -329,6 +336,21 @@ function buildExam() {
   startTimer();
 
   window.scrollTo({ top: examSection.offsetTop - 20, behavior: "smooth" });
+}
+
+function setActiveTab(tabName) {
+  if (tabName === "history") {
+    examTab.classList.add("hidden");
+    historyTab.classList.remove("hidden");
+    tabHistory.classList.add("active");
+    tabExam.classList.remove("active");
+    renderInsights(lastHistory);
+    return;
+  }
+  historyTab.classList.add("hidden");
+  examTab.classList.remove("hidden");
+  tabExam.classList.add("active");
+  tabHistory.classList.remove("active");
 }
 
 function formatTime(seconds) {
@@ -520,6 +542,7 @@ async function loadExamHistory() {
 
 async function renderHistory() {
   const history = await loadExamHistory();
+  lastHistory = history;
   historyList.innerHTML = "";
   if (history.length === 0) {
     const empty = document.createElement("div");
@@ -557,6 +580,7 @@ async function renderHistory() {
     row.appendChild(actions);
     historyList.appendChild(row);
   });
+  renderInsights(history);
 }
 
 async function loadExamDetails(examId) {
@@ -626,6 +650,9 @@ clearHistoryBtn.addEventListener("click", () => {
     renderHistory();
   });
 });
+
+tabExam.addEventListener("click", () => setActiveTab("exam"));
+tabHistory.addEventListener("click", () => setActiveTab("history"));
 
 closeDetailsBtn.addEventListener("click", () => {
   detailsModal.classList.add("hidden");
@@ -772,6 +799,7 @@ window.addEventListener("mousemove", dragDetails);
 window.addEventListener("mouseup", endDetailsDrag);
 
 renderHistory();
+setActiveTab("exam");
 
 questionList.addEventListener("change", () => {
   const answered = Array.from(new Set(
@@ -781,3 +809,92 @@ questionList.addEventListener("change", () => {
   )).length;
   progress.textContent = `Question ${Math.min(answered + 1, 10)} of 10`;
 });
+
+window.addEventListener("resize", () => {
+  renderInsights(lastHistory);
+});
+
+function renderInsights(history) {
+  if (!scoreChartCtx) {
+    return;
+  }
+  const data = history.slice(0, 20).reverse();
+  const width = scoreChart.clientWidth || 800;
+  const height = 260;
+  scoreChart.width = width * window.devicePixelRatio;
+  scoreChart.height = height * window.devicePixelRatio;
+  scoreChart.style.width = `${width}px`;
+  scoreChart.style.height = `${height}px`;
+  scoreChartCtx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+
+  scoreChartCtx.clearRect(0, 0, width, height);
+  scoreChartCtx.fillStyle = "rgba(11, 114, 133, 0.08)";
+  scoreChartCtx.fillRect(0, 0, width, height);
+
+  const padding = 44;
+  const chartWidth = width - padding * 2;
+  const chartHeight = height - padding * 2;
+
+  scoreChartCtx.strokeStyle = "rgba(11, 114, 133, 0.3)";
+  scoreChartCtx.lineWidth = 1;
+  scoreChartCtx.beginPath();
+  scoreChartCtx.moveTo(padding, padding);
+  scoreChartCtx.lineTo(padding, height - padding);
+  scoreChartCtx.lineTo(width - padding, height - padding);
+  scoreChartCtx.stroke();
+
+  scoreChartCtx.fillStyle = "#4a5b63";
+  scoreChartCtx.font = "12px 'Outfit', sans-serif";
+  scoreChartCtx.fillText("Score (%)", 8, padding - 10);
+  scoreChartCtx.fillText("Attempts", width - padding - 52, height - 10);
+
+  if (data.length === 0) {
+    scoreChartCtx.fillStyle = "#4a5b63";
+    scoreChartCtx.font = "16px 'Outfit', sans-serif";
+    scoreChartCtx.fillText("No scores yet", padding + 8, height / 2);
+    return;
+  }
+
+  const points = data.map((entry, index) => {
+    const percent = Number(entry.percent) || 0;
+    const x = padding + (chartWidth / Math.max(data.length - 1, 1)) * index;
+    const y = padding + chartHeight - (percent / 100) * chartHeight;
+    return { x, y, percent };
+  });
+
+  const avg =
+    points.reduce((sum, point) => sum + point.percent, 0) / points.length;
+  const avgY = padding + chartHeight - (avg / 100) * chartHeight;
+
+  scoreChartCtx.strokeStyle = "rgba(11, 114, 133, 0.4)";
+  scoreChartCtx.setLineDash([6, 6]);
+  scoreChartCtx.lineWidth = 2;
+  scoreChartCtx.beginPath();
+  scoreChartCtx.moveTo(padding, avgY);
+  scoreChartCtx.lineTo(width - padding, avgY);
+  scoreChartCtx.stroke();
+  scoreChartCtx.setLineDash([]);
+
+  scoreChartCtx.fillStyle = "#0b7285";
+  scoreChartCtx.font = "12px 'Outfit', sans-serif";
+  scoreChartCtx.fillText(`Avg ${Math.round(avg)}%`, padding + 6, avgY - 6);
+
+  scoreChartCtx.strokeStyle = "#f28482";
+  scoreChartCtx.lineWidth = 3;
+  scoreChartCtx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) {
+      scoreChartCtx.moveTo(point.x, point.y);
+    } else {
+      scoreChartCtx.lineTo(point.x, point.y);
+    }
+  });
+  scoreChartCtx.stroke();
+
+  scoreChartCtx.fillStyle = "#0b7285";
+  points.forEach((point) => {
+    scoreChartCtx.beginPath();
+    scoreChartCtx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+    scoreChartCtx.fill();
+  });
+}
