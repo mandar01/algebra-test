@@ -46,6 +46,10 @@
           </span>
         </label>
       </div>
+      <label class="hint-toggle">
+        <input type="checkbox" id="hintToggle" />
+        <span>Show hints during the exam</span>
+      </label>
       <button id="startBtn" class="primary">Start Exam</button>
     </section>
 
@@ -80,6 +84,17 @@
       </div>
       <div class="modal-question" id="explainQuestion"></div>
       <div class="modal-body" id="explainBody"></div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="hintModal" role="dialog" aria-modal="true" aria-labelledby="hintTitle">
+    <div class="modal-card">
+      <div class="modal-header" id="hintModalHeader">
+        <h3 id="hintTitle">Hint</h3>
+        <button class="modal-close" id="closeHintBtn" type="button">Close</button>
+      </div>
+      <div class="modal-question" id="hintQuestion"></div>
+      <div class="modal-body" id="hintBody"></div>
     </div>
   </div>
 

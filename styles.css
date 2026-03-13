@@ -211,6 +211,19 @@ body {
   color: var(--muted);
 }
 
+.hint-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.hint-toggle input {
+  accent-color: var(--accent-2);
+  transform: scale(1.1);
+}
+
 .primary,
 .ghost {
   border: none;
@@ -283,6 +296,25 @@ body {
 .question h3 {
   margin: 0 0 12px;
   font-size: 1.05rem;
+}
+
+.hint-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(11, 114, 133, 0.08);
+  border: 1px dashed rgba(11, 114, 133, 0.25);
+  color: var(--accent);
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.hint-link:hover {
+  background: rgba(11, 114, 133, 0.14);
+  border-color: rgba(11, 114, 133, 0.45);
 }
 
 .choices {
